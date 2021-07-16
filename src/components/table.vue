@@ -1,7 +1,16 @@
 <!-- 公共table -->
 <template>
     <div style="padding-top: 10px">
-        <a-table :columns="columns" :data-source="data">
+        <!-- 该表格还没有遇到特别场景,无需考虑太多,有其他场景在优化 -->
+        <a-table
+            :columns="columns"
+            :data-source="data"
+            :row-key="(record, index) => index"
+            :loading="loading"
+            :pagination="pagination"
+            @change="handleTableChange"
+            :bordered="true"
+        >
             <template v-for="(item, index) in slot" :key="index" #[item]="text,record">
                 <slot :name="item" :text="text" :record="record"></slot>
             </template>
@@ -10,25 +19,43 @@
 </template>
 
 <script>
-import { defineComponent, onMounted } from 'vue';
+import { defineComponent, onMounted, computed } from 'vue';
 
 export default defineComponent({
     props: {
         columns: Array,
         data: Array,
+        paginationTotal: Object,
+        loading: Boolean,
     },
-    setup(props) {
+    setup(props, { emit }) {
+        // 用到该组件的slot处理
         const arr = props.columns.map(res => res.slots?.customRender);
         const slot = [];
         arr.forEach(res => {
             if (res) slot.push(res);
         });
+        const pagination = computed(() => ({
+            current: props.paginationTotal.page, // 当前页
+            pageSize: props.paginationTotal.pageSize, // 传过来的一个展示页数
+            total: props.paginationTotal.total, // 总条数
+            pageSizeOptions: ['10', '20', '30', '40'], // 可以切换每页展示条数
+            showQuickJumper: true, //是否允许跳转
+            showSizeChanger: true, // 是否可以改变每页条数
+            defaultPageSize: '10', // 默认展示条数
+            showTotal: (total, range) => `共${total}条 当前显示${range[0]} - ${range[1]}条`,
+        }));
+        const handleTableChange = (pagination, filters, sorter, { currentDataSource }) => {
+            emit('changeTable', { pagination, filters, sorter, currentDataSource });
+        };
         onMounted(() => {
             console.log(props.columns);
             console.log(props.data);
         });
         return {
             slot,
+            handleTableChange,
+            pagination,
         };
     },
 });

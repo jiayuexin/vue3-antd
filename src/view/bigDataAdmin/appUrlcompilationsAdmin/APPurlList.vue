@@ -3,7 +3,13 @@
     <div>
         <SearchCom :list="list" @searchClick="searchClick"></SearchCom>
         <a-button type="primary">新增品牌url合集</a-button>
-        <Table :data="data" :columns="columns">
+        <Table
+            :data="data"
+            :columns="columns"
+            :loading="loading"
+            :paginationTotal="paginationTotal"
+            @changeTable="changeTable"
+        >
             <template #action="{record}">
                 <a-button type="link" @click="deleteFun(record)">点击</a-button>
             </template>
@@ -68,6 +74,7 @@ export default {
             },
         ]);
         provide(list);
+        // 表格规则个数据
         const columns = ref([
                 {
                     title: '名称',
@@ -134,11 +141,27 @@ export default {
                     tags: ['cool', 'teacher'],
                 },
             ]);
+
         const searchClick = data => {
                 console.log(data);
             },
             deleteFun = record => {
                 console.log(record);
+            };
+
+        // table组件参数以及方法
+        const loading = ref(false),
+            paginationTotal = reactive({
+                page: 1,
+                pageSize: 10,
+                total: 0,
+            }),
+            changeTable = data => {
+                console.log(data);
+                // pagination
+                // filters
+                // sorter
+                // currentDataSource
             };
         return {
             list,
@@ -146,6 +169,9 @@ export default {
             deleteFun,
             columns,
             data,
+            paginationTotal,
+            loading,
+            changeTable,
         };
     },
 };
