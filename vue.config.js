@@ -1,4 +1,3 @@
-
 // path  地址路径处理
 const path = require('path');
 function resolve(dir) {
@@ -19,6 +18,7 @@ module.exports = {
             },
         },
     },
+    // 配置@
     chainWebpack: config => {
         config.resolve.alias.set('@', resolve('src'));
     },

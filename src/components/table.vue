@@ -11,7 +11,7 @@
             @change="handleTableChange"
             :bordered="true"
         >
-            <template v-for="(item, index) in slot" :key="index" #[item]="text,record">
+            <template v-for="(item, index) in slot" :key="index" #[item]="{text,record}">
                 <slot :name="item" :text="text" :record="record"></slot>
             </template>
         </a-table>
@@ -19,14 +19,15 @@
 </template>
 
 <script>
-import { defineComponent, onMounted, computed } from 'vue';
+import { onMounted, computed } from 'vue';
 
-export default defineComponent({
+export default {
     props: {
         columns: Array,
         data: Array,
         paginationTotal: Object,
         loading: Boolean,
+        total: Number,
     },
     setup(props, { emit }) {
         // 用到该组件的slot处理
@@ -38,7 +39,7 @@ export default defineComponent({
         const pagination = computed(() => ({
             current: props.paginationTotal.page, // 当前页
             pageSize: props.paginationTotal.pageSize, // 传过来的一个展示页数
-            total: props.paginationTotal.total, // 总条数
+            total: props.total, // 总条数
             pageSizeOptions: ['10', '20', '30', '40'], // 可以切换每页展示条数
             showQuickJumper: true, //是否允许跳转
             showSizeChanger: true, // 是否可以改变每页条数
@@ -46,6 +47,7 @@ export default defineComponent({
             showTotal: (total, range) => `共${total}条 当前显示${range[0]} - ${range[1]}条`,
         }));
         const handleTableChange = (pagination, filters, sorter, { currentDataSource }) => {
+            console.log(props.data);
             emit('changeTable', { pagination, filters, sorter, currentDataSource });
         };
         onMounted(() => {
@@ -58,5 +60,5 @@ export default defineComponent({
             pagination,
         };
     },
-});
+};
 </script>

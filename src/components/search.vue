@@ -13,11 +13,13 @@
                         v-model:value="item.value"
                         style="width: 200px"
                         v-if="item.comp === 'input'"
+                        :placeholder="`请输入${item.label}`"
                     />
                     <a-select
                         v-model:value="item.value"
                         style="width: 200px"
                         v-if="item.comp === 'select'"
+                        :placeholder="`请选择${item.label}`"
                     >
                         <a-select-option value="shanghai">Zone one</a-select-option>
                     </a-select>
@@ -29,14 +31,24 @@
                         placeholder="Pick a date"
                         style="width: 200px"
                     />
+                    <a-cascader
+                        v-model:value="item.value"
+                        :options="item.list"
+                        expand-trigger="hover"
+                        :placeholder="`请选择${item.label}`"
+                        v-if="item.comp === 'cascader'"
+                        style="width: 200px;"
+                        popupClassName="scroll"
+                    />
                     <!-- 单选框 -->
                     <a-radio-group
                         v-model:value="item.value"
                         style="width: 200px;display:flex"
                         v-if="item.comp === 'radio'"
                     >
-                        <a-radio value="1">Sponsor</a-radio>
-                        <a-radio value="2">Venue</a-radio>
+                        <a-radio v-for="v in item.list" :value="v.id" :key="v.id">
+                            {{ v.name }}
+                        </a-radio>
                     </a-radio-group>
                 </div>
             </div>
@@ -50,8 +62,9 @@
     </div>
 </template>
 <script>
-import { defineComponent, onMounted, watch, toRefs } from 'vue';
-export default defineComponent({
+import { onMounted, watch } from 'vue';
+import moment from 'moment';
+export default {
     props: {
         list: Array,
     },
@@ -68,29 +81,49 @@ export default defineComponent({
                 console.log(newVal, oldVal, props.list);
             }
         );
+        const displayRender = labels => {
+            return labels[labels.length - 1];
+        };
         const data = {};
         const // 点击查询回传的搜索条件
             changeSearch = () => {
                 props.list.forEach(item => {
-                    data[item.name] = item.value;
+                    if (Array.isArray(item.value) && item.value.length) {
+                        if (item.comp === 'date') {
+                            data[`start${item.name}`] = moment(item.value[0]).format('YYYY-MM-DD');
+                            data[`end${item.name}`] = moment(item.value[1]).format('YYYY-MM-DD');
+                        } else if (item.comp !== 'date') {
+                            data[item.name] = item.value;
+                        }
+                    } else if (typeof item.value !== 'object' && item.value) {
+                        data[item.name] = item.value;
+                    }
                 });
                 emit('searchClick', data);
             },
             // 重置按钮
             reset = () => {
                 props.list.forEach(item => {
-                    data[item.name] = item.value;
+                    if (item.comp === 'input' || item.comp === 'radio') {
+                        item.value = '';
+                    } else if (item.comp === 'data') {
+                        item.value = null;
+                    } else if (item.comp === 'cascader') {
+                        item.value = [];
+                    } else if (item.comp === 'select') {
+                        item.value = undefined;
+                    }
                 });
             };
-        console.log(...toRefs(props.list));
         return {
             // toRefs  将reactive   响应式对象  转换为 普通对象   其值 都是指向原来对象的property上    结果还是响应式
             // ...toRefs(props.list),
             changeSearch,
             reset,
+            displayRender,
         };
     },
-});
+};
 </script>
 <style lang="less">
 .search-row {
@@ -131,6 +164,29 @@ export default defineComponent({
         display: inline-block;
         max-width: 100%;
         text-align: right;
+    }
+}
+/*修改滚动条样式*/
+.scroll {
+    ::-webkit-scrollbar {
+        width: 3px;
+        /**/
+    }
+    ::-webkit-scrollbar-track {
+        background: rgb(247, 247, 247);
+        border-radius: 2px;
+    }
+    ::-webkit-scrollbar-thumb {
+        background: #e4e4e4;
+        border-radius: 8px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+        background: #d6d6d6;
+        cursor: pointer;
+    }
+    ::-webkit-scrollbar-corner {
+        background: #d6d6d6;
+        border-radius: 0px;
     }
 }
 </style>
