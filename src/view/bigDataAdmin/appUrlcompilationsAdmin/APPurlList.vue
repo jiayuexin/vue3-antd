@@ -19,7 +19,7 @@
 </template>
 
 <script>
-import { provide, reactive, ref, onMounted } from 'vue';
+import { provide, ref, onMounted, unref } from 'vue';
 import SearchCom from '@/components/search';
 import Table from '@/components/table';
 import { listAppCategory, appUrlList } from '@/api/index';
@@ -190,7 +190,8 @@ export default {
                     searchDate.appSubCategoryCode = searchDate.appType[1];
                     delete searchDate.appType;
                 }
-                paginationTotal.page = 1;
+                paginationTotal.value.page = 1;
+                console.log(data);
                 tableList();
             },
             deleteFun = record => {
@@ -204,13 +205,15 @@ export default {
             });
         };
         const tableList = () => {
-            const httpData = Object.assign(paginationTotal, searchDate);
+            const httpData = Object.assign(unref(paginationTotal), searchDate);
             // table列表
+            loading.value = true;
             appUrlList(httpData).then(res => {
+                loading.value = false;
                 const { success, result } = res;
                 if (success) {
                     data.value = result.records;
-                    total = result.total;
+                    total.value = result.total;
                     data.value.forEach(item => {
                         if (item.status) {
                             if (item.status === 1) item.status = '有效';
@@ -235,12 +238,14 @@ export default {
         // table组件参数以及方法
         let total = ref(0);
         const loading = ref(false),
-            paginationTotal = reactive({
+            paginationTotal = ref({
                 page: 1,
                 pageSize: 10,
             }),
             changeTable = data => {
-                console.log(data);
+                paginationTotal.value.page = data.pagination.current;
+                paginationTotal.value.pageSize = data.pagination.pageSize;
+                tableList();
                 // pagination
                 // filters
                 // sorter

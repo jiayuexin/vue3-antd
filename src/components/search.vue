@@ -28,7 +28,6 @@
                         v-model:value="item.value"
                         show-time
                         type="date"
-                        placeholder="Pick a date"
                         style="width: 200px"
                     />
                     <a-cascader

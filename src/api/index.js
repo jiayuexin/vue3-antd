@@ -7,7 +7,7 @@ const login = time =>
         password: '111111',
         username: 'admin',
     });
-const appUrlList = parmas => api.get(`${domain}url/urlCollection/appUrlList`, parmas);
+const appUrlList = params => api.get(`${domain}url/urlCollection/appUrlList`, { params });
 const listAppCategory = () => api.get(`${domain}app/listAppCategory`);
 export {
     appUrlList, // app url table列表
