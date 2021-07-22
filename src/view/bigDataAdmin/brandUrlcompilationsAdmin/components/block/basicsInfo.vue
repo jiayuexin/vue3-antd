@@ -3,17 +3,27 @@
         <div style="padding: 10px">
             <a-row :gutter="20">
                 <a-col :span="6" v-if="title === '编辑'">
-                    <a-form-item label="品牌名称" name="name">
+                    <a-form-item label="url合集ID" name="name">
                         <a-input v-model:value="formState.name" style="width: 180px" disabled />
                     </a-form-item>
                 </a-col>
                 <a-col :span="6">
                     <a-form-item label="品牌名称" name="name">
-                        <a-input
+                        <a-auto-complete
                             v-model:value="formState.name"
-                            style="width: 180px"
-                            :disabled="title === '编辑'"
-                        />
+                            placement="bottom"
+                            @search="onSearch"
+                        >
+                            <template #dataSource>
+                                <a-select-option
+                                    v-for="item in getBrandSelect"
+                                    :value="item.brandName"
+                                    :key="item.brandId"
+                                >
+                                    {{ item.brandName }}
+                                </a-select-option>
+                            </template>
+                        </a-auto-complete>
                     </a-form-item>
                 </a-col>
                 <a-col :span="6">
@@ -22,23 +32,16 @@
                     </a-form-item>
                 </a-col>
                 <a-col :span="6">
-                    <a-form-item label="品牌是否有效" name="region">
-                        <a-select v-model:value="formState.desc" style="width: 165px" disabled>
+                    <a-form-item label="品牌是否有效">
+                        <a-select v-model:value="noFormState.status" style="width: 165px" disabled>
                             <a-select-option :value="0">否</a-select-option>
                             <a-select-option :value="1">是</a-select-option>
                         </a-select>
                     </a-form-item>
                 </a-col>
                 <a-col :span="6">
-                    <a-form-item label="品牌行业" name="appendixUrl">
-                        <a-cascader
-                            v-model:value="formState.appendixUrl"
-                            :options="select"
-                            expand-trigger="hover"
-                            style="width: 180px;"
-                            popupClassName="scroll"
-                            disabled
-                        />
+                    <a-form-item label="品牌行业">
+                        <a-input v-model:value="noFormState.brand" style="width: 180px" disabled />
                     </a-form-item>
                 </a-col>
             </a-row>
@@ -47,7 +50,7 @@
                     <a-form-item
                         label="备注"
                         name="memo"
-                        :style="title === '新增' ? 'margin-left: 38px' : 'margin-left: 30px'"
+                        :style="title === '新增' ? 'margin-left: 38px' : 'margin-left: 28px'"
                     >
                         <a-textarea
                             v-model:value="formState.memo"
@@ -63,7 +66,7 @@
 </template>
 <script>
 import { defineComponent, reactive, ref, toRaw, onMounted } from 'vue';
-import { listChannelType } from '@/api/index';
+import { listChannelType, getBrandVO } from '@/api/index';
 export default defineComponent({
     props: {
         title: {
@@ -74,13 +77,18 @@ export default defineComponent({
     setup(props) {
         //   用于表单绑定ref
         const formRef = ref();
+        // 需要传给后端的数据
         const formState = reactive({
             name: '',
-            entityId: undefined,
-            appendixUrl: [],
-            desc: '',
+            entityId: '',
             memo: '',
         });
+        // 不需要传后端的数据
+        const noFormState = reactive({
+            brand: '',
+            status: '',
+        });
+        const loading = ref(false);
         const rules = {
             name: [
                 {
@@ -90,7 +98,15 @@ export default defineComponent({
                 },
             ],
         };
-
+        // 防抖是  在n秒内重复执行   会重新计算时间
+        // 节流是   在n秒内只执行一次
+        let timer = null;
+        const onSearch = search => {
+            clearTimeout(timer);
+            timer = setTimeout(() => {
+                getBrand(search);
+            }, 1000);
+        };
         const onSubmit = () => {
             formRef.value
                 .validate()
@@ -101,7 +117,12 @@ export default defineComponent({
                     console.log('error', error);
                 });
         };
-
+        const getBrandSelect = ref([]);
+        const getBrand = name => {
+            getBrandVO(name).then(res => {
+                getBrandSelect.value = res.result;
+            });
+        };
         const resetForm = () => {
             formRef.value.resetFields();
         };
@@ -113,6 +134,7 @@ export default defineComponent({
         };
         onMounted(() => {
             listHttp();
+            getBrand();
         });
         return {
             formRef,
@@ -122,6 +144,10 @@ export default defineComponent({
             onSubmit,
             resetForm,
             select,
+            loading,
+            onSearch,
+            getBrandSelect,
+            noFormState,
         };
     },
 });

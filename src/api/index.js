@@ -9,14 +9,16 @@ const login = time =>
     });
 const appUrlList = params => api.get(`${domain}url/urlCollection/appUrlList`, { params });
 const listAppCategory = () => api.get(`${domain}app/listAppCategory`);
-const listChannelType = () => api.get(`${domain}brand/listChannelType`)
-const brandUrlList = params => api.get(`${domain}url/urlCollection/brandUrlList`, {params})
+const listChannelType = () => api.get(`${domain}brand/listChannelType`);
+const brandUrlList = params => api.get(`${domain}url/urlCollection/brandUrlList`, { params });
+const getBrandVO = name => api.get(`${domain}brand/getBrandVO`, { params: { brandName: name } });
 export {
     appUrlList, // app url table列表
     listAppCategory, // app 级联分类   search
     login, // 登录
     listChannelType, // 品牌分类列表
     brandUrlList, // 品牌table 列表
+    getBrandVO, // 输入品牌名称搜索
 };
 
 // export default    只能导出一个

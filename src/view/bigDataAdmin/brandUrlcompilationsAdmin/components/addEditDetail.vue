@@ -15,6 +15,11 @@
                 style="height: 50px;font-size: 16px;font-weight: 900"
             />
             <BasicsInfo :title="title"></BasicsInfo>
+            <a-alert
+                message="渠道信息"
+                type="success"
+                style="height: 50px;font-size: 16px;font-weight: 900"
+            />
         </a-drawer>
     </div>
 </template>
