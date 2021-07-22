@@ -26,7 +26,6 @@
                     <a-range-picker
                         v-if="item.comp === 'date'"
                         v-model:value="item.value"
-                        show-time
                         type="date"
                         style="width: 200px"
                     />
@@ -62,7 +61,7 @@
 </template>
 <script>
 import { onMounted, watch } from 'vue';
-import moment from 'moment';
+
 export default {
     props: {
         list: Array,
@@ -83,18 +82,19 @@ export default {
         const displayRender = labels => {
             return labels[labels.length - 1];
         };
-        const data = {};
         const // 点击查询回传的搜索条件
             changeSearch = () => {
+                // 把data放在函数外面,被赋值后,会一直有值,放在函数里面的话,每次执行函数都是空,是想要的效果
+                const data = {};
                 props.list.forEach(item => {
                     if (Array.isArray(item.value) && item.value.length) {
-                        if (item.comp === 'date') {
-                            data[`start${item.name}`] = moment(item.value[0]).format('YYYY-MM-DD');
-                            data[`end${item.name}`] = moment(item.value[1]).format('YYYY-MM-DD');
-                        } else if (item.comp !== 'date') {
-                            data[item.name] = item.value;
-                        }
-                    } else if (typeof item.value !== 'object' && item.value) {
+                        // if (item.comp === 'date') {
+                        //     data[`start${item.name}`] = moment(item.value[0]).format('YYYY-MM-DD');
+                        //     data[`end${item.name}`] = moment(item.value[1]).format('YYYY-MM-DD');
+                        // } else if (item.comp !== 'date') {
+                        data[item.name] = item.value;
+                        // }
+                    } else if (typeof item.value !== 'object' && (item.value || item.value === 0)) {
                         data[item.name] = item.value;
                     }
                 });
@@ -105,7 +105,7 @@ export default {
                 props.list.forEach(item => {
                     if (item.comp === 'input' || item.comp === 'radio') {
                         item.value = '';
-                    } else if (item.comp === 'data') {
+                    } else if (item.comp === 'date') {
                         item.value = null;
                     } else if (item.comp === 'cascader') {
                         item.value = [];
@@ -126,10 +126,9 @@ export default {
 </script>
 <style lang="less">
 .search-row {
-    padding: 3px 10px;
+    padding: 3px 5px;
     font-size: 12px;
     display: flex;
-
     a {
         padding: 4px 13px;
         display: inline-block;
@@ -142,7 +141,7 @@ export default {
         background: #deefff;
     }
     label {
-        width: 130px;
+        width: 110px;
         padding-right: 0;
         margin-bottom: 0;
         line-height: 30px;

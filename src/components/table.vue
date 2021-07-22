@@ -5,11 +5,13 @@
         <a-table
             :columns="columns"
             :data-source="data"
-            :row-key="(record, index) => index"
+            :row-key="record => record.id"
             :loading="loading"
             :pagination="pagination"
             @change="handleTableChange"
             :bordered="true"
+            :row-selection="isRawSelect ? rowSelection : null"
+            :size="size"
         >
             <template v-for="(item, index) in slot" :key="index" #[item]="{text,record}">
                 <slot :name="item" :text="text" :record="record"></slot>
@@ -19,7 +21,7 @@
 </template>
 
 <script>
-import { onMounted, computed, ref } from 'vue';
+import { computed, ref } from 'vue';
 
 export default {
     props: {
@@ -28,6 +30,16 @@ export default {
         paginationTotal: Object,
         loading: Boolean,
         total: Number,
+        // isRawSelect  rowSelection   必须搭配使用
+        isRawSelect: {
+            type: Boolean,
+            default: false,
+        },
+        rowSelection: Object,
+        size: {
+            type: String,
+            default: 'default', // default | middle | small
+        },
     },
     setup(props, { emit }) {
         // 用到该组件的slot处理
@@ -36,9 +48,8 @@ export default {
         arr.forEach(res => {
             if (res) slot.value.push(res);
         });
-        console.log(1);
         const pagination = computed(() => ({
-            current: props.paginationTotal.page, // 当前页
+            current: props.paginationTotal.pageNo, // 当前页
             pageSize: props.paginationTotal.pageSize, // 传过来的一个展示页数
             total: props.total, // 总条数
             pageSizeOptions: ['10', '20', '30', '40'], // 可以切换每页展示条数
@@ -46,13 +57,12 @@ export default {
             showSizeChanger: true, // 是否可以改变每页条数
             showTotal: (total, range) => `共${total}条 当前显示${range[0]} - ${range[1]}条`,
         }));
-        const handleTableChange = (pagination, filters, sorter, { currentDataSource }) => {
-            emit('changeTable', { pagination, filters, sorter, currentDataSource });
+        // 点击分页时的回调
+        const handleTableChange = (pagination, filters, sorter) => {
+            // , { currentDataSource }   第四个参数暂时不需要   ,需要时传回去即可
+            emit('changeTable', { pagination, filters, sorter });
         };
-        onMounted(() => {
-            console.log(props.columns);
-            console.log(props.data);
-        });
+
         return {
             slot,
             handleTableChange,

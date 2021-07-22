@@ -37,7 +37,12 @@
         <a-layout>
             <a-layout-header style="background: #fff; padding: 0;padding-left: 20px">
                 <menu-unfold-outlined
-                    :type="collapsed ? 'menu-unfold' : 'menu-fold'"
+                    v-if="collapsed"
+                    class="trigger"
+                    @click="() => (collapsed = !collapsed)"
+                />
+                <menu-fold-outlined
+                    v-else
                     class="trigger"
                     @click="() => (collapsed = !collapsed)"
                 />
@@ -52,18 +57,23 @@
                     borderRadius: '10px',
                 }"
             >
+                <!-- <a-breadcrumb :routes="menu" :param="menu">
+                    <template #itemRender="{ route, routes, paths }">
+                        <span v-if="routes.indexOf(route) === routes.length - 1">
+                            {{ route.breadcrumbName }}
+                        </span>
+                        <router-link v-else :to="paths.join('/')">
+                            {{ route.breadcrumbName }}
+                        </router-link>
+                    </template>
+                </a-breadcrumb> -->
                 <router-view />
             </a-layout-content>
         </a-layout>
     </a-layout>
 </template>
 <script>
-// import // UserOutlined,
-// VideoCameraOutlined,
-// UploadOutlined,
-// MenuUnfoldOutlined,
-// MenuFoldOutlined,
-// '@ant-design/icons-vue';
+import { MenuUnfoldOutlined, MenuFoldOutlined } from '@ant-design/icons-vue';
 import { useRouter } from 'vue-router';
 import { defineComponent, ref, onMounted } from 'vue';
 
@@ -72,8 +82,8 @@ export default defineComponent({
         // UserOutlined,
         // VideoCameraOutlined,
         // UploadOutlined,
-        // MenuUnfoldOutlined,
-        // MenuFoldOutlined,
+        MenuUnfoldOutlined,
+        MenuFoldOutlined,
     },
     setup() {
         const router = useRouter();
@@ -151,8 +161,8 @@ export default defineComponent({
                         },
                     },
                     {
-                        path: '/final-data-admin',
-                        name: 'finalDataAdmin',
+                        path: '/audit-data-admin',
+                        name: 'auditDataAdmin',
                         meta: {
                             menuName: '最终数据审核',
                         },
@@ -262,7 +272,7 @@ export default defineComponent({
             console.log(process.env);
         });
         const jumpRouter = path => {
-            console.log(path);
+            console.log(router);
             router.push({ path: path.key });
         };
         return {
